@@ -20,8 +20,8 @@ var db_config = {
     host: 'localhost',
     user: 'root',
     // port:3000,
-    database: 'delf',
-    password: 'qwerty12'
+    database: 'company',
+    password: 'qwerty'
 };
 
 
@@ -99,6 +99,19 @@ setTimeout(()=>{
     '${req.body.date}','${req.body.mail}','${req.body.phone}','${req.body.pass}')`,
             (err, res) => {
             });
+    })
+
+app.post('/add/service', async (req, res)=>{
+    console.log(req.body)
+    let getid
+    connection.query(`SELECT * FROM employee`,(err, request)=>{
+        getid = request.filter((x)=> x.activity === req.body.servicename)
+        console.log(getid)
+            connection.query(`insert into service(idemployee, nameservice, costservice, descriptionservice)
+    values(${getid[0].idemployee},'${req.body.servicename}',${req.body.price},'${req.body.description}')`,
+                (err, resp) => {
+                });
+        })
     })
 
 

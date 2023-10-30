@@ -1,0 +1,7 @@
+.mainDisplay{
+    display: flex;
+}
+.services{
+    display: flex;
+    flex-direction: column;
+}

@@ -3,8 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Client panel</title>
+    <script src="service/service.js"></script>
+    <link rel="stylesheet" href="client.css">
 </head>
 <body>
+<div class="mainDisplay">
+    <div>
+        <div class="services">
+            <h2>Услуги</h2>
+            <button onclick="serviceBtn(event, 'accounting')">Бухгалтерское обслуживание</button>
+            <button onclick="serviceBtn(event, 'marketing')">Маркетинговые услуги</button>
+            <button onclick="serviceBtn(event, 'hr')">Кадровые услуги</button>
+            <button onclick="serviceBtn(event, 'strategy')">Антикризисные стратегии</button>
+        </div>
+        <div class="orders">
+            <h2>Заказы</h2>
+            <button>Заказ</button>
+            <button>Отчетёты</button>
+            <button>Счета</button>
+        </div>
+        <button onclick="window.location.href='..'">Выйти</button>
+    </div>
+    <div class="mainPlace">
 
+    </div>
+</div>
 </body>
 </html>
