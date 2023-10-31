@@ -92,13 +92,29 @@ setTimeout(()=>{
 //     console.log(err)
 // })
 
-    app.post('/user/register', (req, res) => {
+    app.post('/user/registration', (req, res) => {
         console.log(req.body)
-        connection.query(`insert into client(name, pol, datebirthday, email,phone,passwd) 
-    values('${req.body.name}','${req.body.pol}',
-    '${req.body.date}','${req.body.mail}','${req.body.phone}','${req.body.pass}')`,
-            (err, res) => {
+        connection.query(`insert into client(surname, clientname, parent, companyname,
+        addresscompany, email, phone, passwd) 
+    values('${req.body.surname}',
+        '${req.body.name}',
+        '${req.body.parent}',
+        '${req.body.email}',
+        '${req.body.phone}',
+        '${req.body.nameCompany}',
+        '${req.body.addressCompany}',
+        '${req.body.passwd}')`,
+            (err, resp) => {
+                console.log(resp)
+                console.log(err)
+                if (err) {
+                    res.send('error')
+                }
+                else {
+                    res.send('ok')
+                }
             });
+
     })
 
 app.post('/add/service', async (req, res)=>{
@@ -118,23 +134,44 @@ app.post('/add/service', async (req, res)=>{
     app.post('/user/login',(req,res)=>{
         let allUsers
         let status
+        console.log(req.body)
+
+        connection.query(`SELECT * FROM company.client where email = '${req.body.login}' AND passwd = '${req.body.passwd}'`,
+            (err,resp)=>{
+                console.log(err)
+                console.log(resp)
+                if (err) {
+                    console.log('ERROR')
+                }
+            resp.length === 0 ? res.sendStatus(400)
+                : res.send(200)
+            })
+
         console.log('ok')
-        connection.query(`SELECT * FROM client`,(err,request)=>{
-            allUsers = request
-            console.log(req.body.mail)
-            for (let b = 0; b < allUsers.length; b++){
-                if((allUsers[b].email === req.body.mail) && (allUsers[b].passwd === req.body.pass)){
-                    console.log('Это он!',allUsers[b])
-                    status = 'ok'
-                    res.send({stat:status, id:allUsers[b].idclient})
-                    break
-                }
-                if(b+1 == allUsers.length){
-                    res.send({stat:'notok'})
-                }
-            }
-        })
+        // connection.query(`SELECT * FROM client`,(err,request)=>{
+        //     allUsers = request
+        //     console.log(req.body.mail)
+        //     for (let b = 0; b < allUsers.length; b++){
+        //         if((allUsers[b].email === req.body.mail) && (allUsers[b].passwd === req.body.pass)){
+        //             console.log('Это он!',allUsers[b])
+        //             status = 'ok'
+        //             res.send({stat:status, id:allUsers[b].idclient})
+        //             break
+        //         }
+        //         if(b+1 == allUsers.length){
+        //             res.send({stat:'notok'})
+        //         }
+        //     }
+        // })
     })
+    app.post('/client/getServices',(req,res)=>{
+        console.log(req.body)
+        res.send({data: 'data'})
+        // res.status(200).send({message: "Hello!"});
+    })
+
+
+
 
     app.get('/admin/client',(req,res)=>{
         connection.query(`SELECT * FROM client`,(err, request)=>{

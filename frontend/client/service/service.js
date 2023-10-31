@@ -1,6 +1,4 @@
 function serviceBtn(event, serviceName) {
-    console.log(event)
-    console.log(serviceName)
 
     let data = {}
     if (serviceName === 'accounting'){
@@ -49,15 +47,18 @@ function serviceBtn(event, serviceName) {
     <p>${data.price}</p>
     <h2>Описание</h2>
     <p>${data.description}</p>
+    <div>
+    <button onclick="addToBasket('${serviceName}')">Добавить услугу в карзину</button>
     <button onclick="sendRequest('${serviceName}',${data.price},'${data.description}')">Заказать услугу</button>
+</div>
 </div>`
 }
 
 async function sendRequest(name,price,description){
     let body = {
-        servicename: name,
-        price: price,
-        description: description
+            servicename: name,
+            price: price,
+            description: description
     }
     let response = (await fetch('http://localhost:3005/add/service', {
         method: 'POST',
@@ -71,4 +72,10 @@ async function sendRequest(name,price,description){
     console.log(name)
     console.log(price)
     console.log(description)
+}
+
+function addToBasket(serviceName){
+    let item = sessionStorage.getItem(`${serviceName}`)
+    item === null ? sessionStorage.setItem(serviceName,serviceName)
+        : null
 }
