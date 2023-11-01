@@ -68,10 +68,6 @@ async function sendRequest(name,price,description){
         body: JSON.stringify(body)
     }));
     let json = await response.json()
-
-    console.log(name)
-    console.log(price)
-    console.log(description)
 }
 
 function addToBasket(serviceName){

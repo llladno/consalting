@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const mysql = require('mysql2')
 const {request} = require("express");
+const {set} = require("express/lib/application");
 //
 // const connection = mysql2.createConnection({
 //     host: 'localhost',
@@ -118,7 +119,6 @@ setTimeout(()=>{
     })
 
 app.post('/add/service', async (req, res)=>{
-    console.log(req.body)
     let getid
     connection.query(`SELECT * FROM employee`,(err, request)=>{
         getid = request.filter((x)=> x.activity === req.body.servicename)
@@ -166,8 +166,56 @@ app.post('/add/service', async (req, res)=>{
     })
     app.post('/client/getServices',(req,res)=>{
         console.log(req.body)
+        // connection.query(``)
         res.send({data: 'data'})
         // res.status(200).send({message: "Hello!"});
+    })
+
+    app.post('/client/setServices', async (req,res)=>{
+    //     req.body.forEach((y)=>{
+    //         let getid
+    //         connection.query(`SELECT * FROM employee`,(err, request)=>{
+    //             getid = request.filter((x)=> x.activity === y.name)
+    //             console.log(getid)
+    //             connection.query(`insert into service(idemployee, nameservice, costservice, descriptionservice)
+    // values(${getid[0].idemployee},'${y.name}',${y.price},'${y.description}')`,
+    //                 (err, resp) => {
+    //                 });
+    //         })
+    //     })
+        setTimeout(async ()=>{
+            let autoinc
+            connection.query('select idorder from mainorder',(err, resp)=>{
+                autoinc = resp[resp.length-1].idorder
+                console.log(resp[resp.length-1].idorder)
+            })
+            console.log(autoinc)
+            let id = []
+            setTimeout(()=>{
+                connection.query(`select * from service`,(err, resp)=>{
+                    console.log(resp.length)
+                    for (let c = 0; c < req.body.length; c++){
+                        id.push(resp[resp.length - c-1])
+                    }
+                })
+            },100)
+            setTimeout(()=>{
+                autoinc = autoinc+1
+                console.log(req.body.length)
+                console.log('this is id')
+                console.log(id)
+                let date = new Date()
+                id.forEach((x)=>{
+                    console.log('this is x')
+                    console.log(x)
+                    connection.query(`INSERT INTO company.mainorder (idorder,idclient,idservice, descriptionorder, costorder, dateorder)
+VALUES (${autoinc}, 1, ${x.idserice}, 'ivanov_ii@example.com', ${x.costservice}, "${date.toLocaleDateString()}")`,(err, resp)=>{
+                        console.log(err)
+                        console.log(resp)
+                    })
+                })
+            },200)
+        },200)
     })
 
 
