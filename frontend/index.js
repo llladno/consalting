@@ -15,9 +15,13 @@ async function loginBtn(){
                 'Content-Type': 'application/json;charset=utf-8'
             },
             body: JSON.stringify(body)
+        }).then((x) => {return x.json()}).then((y)=>{
+           return y.message
         })
-        if(await response.status === 200){
+        console.log(response)
+        if(response !== 'error'){
             sessionStorage.setItem('login',body.login)
+            sessionStorage.setItem('id', await response)
             window.location.href = 'client/client.html'
         }
     } else {

@@ -143,8 +143,8 @@ app.post('/add/service', async (req, res)=>{
                 if (err) {
                     console.log('ERROR')
                 }
-            resp.length === 0 ? res.sendStatus(400)
-                : res.send(200)
+            resp.length === 0 ? res.send({message: 'error'})
+                : res.send({message: resp[0].idclient})
             })
 
         console.log('ok')
@@ -165,53 +165,86 @@ app.post('/add/service', async (req, res)=>{
         // })
     })
     app.post('/client/getServices',(req,res)=>{
-        console.log(req.body)
+        console.log(req.body.id)
         // connection.query(``)
-        res.send({data: 'data'})
+        // SELECT * FROM mainorder where idclient = ${req.body.id}`,(err, request)=>{
+
+        connection.query(`SELECT 
+    MAX(idorder) AS idorder,
+    MAX(idclient) AS idclient,
+GROUP_CONCAT(idservice SEPARATOR ',') AS idservice,
+    MAX(descriptionorder) AS descriptionorder,
+    SUM(costorder) AS costorder,
+    MAX(dateorder) AS dateorder,
+    orderwrite
+FROM mainorder where idclient = ${req.body.id}
+GROUP BY orderwrite
+ORDER BY idorder;`,(err, request)=>{
+            console.log(request)
+            res.send({data: request})
+        })
         // res.status(200).send({message: "Hello!"});
     })
 
     app.post('/client/setServices', async (req,res)=>{
-    //     req.body.forEach((y)=>{
-    //         let getid
-    //         connection.query(`SELECT * FROM employee`,(err, request)=>{
-    //             getid = request.filter((x)=> x.activity === y.name)
-    //             console.log(getid)
-    //             connection.query(`insert into service(idemployee, nameservice, costservice, descriptionservice)
-    // values(${getid[0].idemployee},'${y.name}',${y.price},'${y.description}')`,
-    //                 (err, resp) => {
-    //                 });
-    //         })
-    //     })
-        setTimeout(async ()=>{
+        Array.from(req.body.data).forEach((y)=>{
+            let getid
+            console.log(y)
+            connection.query(`SELECT * FROM employee`,(err, request)=>{
+                getid = request.filter((x)=> x.activity === y.name)
+                console.log(getid)
+                connection.query(`insert into service(idemployee, nameservice, costservice, descriptionservice)
+    values(${getid[0].idemployee},'${y.name}',${y.price},'${y.description}')`,
+                    (err, resp) => {
+                    });
+            })
+        })
+        setTimeout( ()=>{
             let autoinc
-            connection.query('select idorder from mainorder',(err, resp)=>{
-                autoinc = resp[resp.length-1].idorder
-                console.log(resp[resp.length-1].idorder)
+            connection.query('select orderwrite from mainorder',(err, resp)=>{
+                autoinc = resp[resp.length-1].orderwrite
             })
             console.log(autoinc)
             let id = []
             setTimeout(()=>{
                 connection.query(`select * from service`,(err, resp)=>{
+                    console.log(err)
                     console.log(resp.length)
-                    for (let c = 0; c < req.body.length; c++){
+                    for (let c = 0; c < req.body.data.length; c++){
                         id.push(resp[resp.length - c-1])
                     }
                 })
             },100)
             setTimeout(()=>{
-                autoinc = autoinc+1
-                console.log(req.body.length)
-                console.log('this is id')
-                console.log(id)
-                let date = new Date()
+                let cost = 0
+                let sumService = []
+                let sumServicestr = ''
                 id.forEach((x)=>{
-                    console.log('this is x')
+                    cost += x.costservice
+                    sumService.push(x.idserice)
+                })
+                sumService.forEach((x)=>{
+                    sumServicestr = sumServicestr + '-' + x
+                })
+
+                autoinc = autoinc+1
+                console.log(autoinc)
+                let date = new Date()
+                let query = {
+                    idclient: 1,
+                    idservice: sumService,
+                    descriptionorder: '',
+                    costorder: cost,
+                    dateorder: date.toLocaleDateString()
+                }
+                id.forEach((x)=>{
+                    console.log('this.is x value id')
                     console.log(x)
-                    connection.query(`INSERT INTO company.mainorder (idorder,idclient,idservice, descriptionorder, costorder, dateorder)
-VALUES (${autoinc}, 1, ${x.idserice}, 'ivanov_ii@example.com', ${x.costservice}, "${date.toLocaleDateString()}")`,(err, resp)=>{
-                        console.log(err)
-                        console.log(resp)
+                    connection.query(`INSERT INTO company.mainorder (idclient,idservice, descriptionorder, costorder, dateorder, orderwrite)
+VALUES ( ${req.body.user}, '${x.idserice}',
+'ivanov_ii@example.com',
+${x.costservice},
+"${date.toLocaleDateString()}",${autoinc})`,(err, resp)=>{
                     })
                 })
             },200)

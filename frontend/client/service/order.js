@@ -7,7 +7,6 @@ async function getOrders() {
         }
     }
 
-    await getOrdersFromBD()
 
     let mainPlace = document.getElementsByClassName('mainPlace')[0]
     if (basket.length !== 0){
@@ -21,10 +20,12 @@ ${basket.map((x)=>{
             else x = 'Антикризисные стратегии'
             return x
         })}</p>
-<button onclick="toOrder()">Заказать</button>`
+<button onclick="toOrder()">Заказать</button>
+<h2>Ваши заказы</h2>`
     } else {
         mainPlace.innerHTML = `<p>Выберите услуги</p>`
     }
+    await getOrdersFromBD()
 
     console.log(basket)
 }
@@ -35,7 +36,7 @@ async function getOrdersFromBD() {
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
         },
-        body: JSON.stringify({login:'test'})
+        body: JSON.stringify({id:sessionStorage.getItem('id')})
     }).then((x)=>{
         let json = x.json()
         console.log(json)
@@ -43,6 +44,13 @@ async function getOrdersFromBD() {
         }
     ).then((y)=>{
         console.log(y)
+        return y
+    })
+
+    let mainPlace = document.getElementsByClassName('mainPlace')[0]
+
+    response.data.map((x)=>{
+        mainPlace.innerHTML += `<div><h4>№Заказа: ${x.orderwrite}</h4>Дата:${x.dateorder} <p>ID услуг(и): ${x.idservice}</p><p>Сумма: ${+x.costorder}₽</p></div>`
     })
     console.log(response)
     console.log(await response)
@@ -96,10 +104,6 @@ async function toOrder (){
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
         },
-        body: JSON.stringify(dataTosend)
+        body: JSON.stringify({data:dataTosend, user: sessionStorage.getItem('id')})
     })
-
-    console.log(dataTosend)
-    console.log(basket)
-
 }
