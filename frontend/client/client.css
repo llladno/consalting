@@ -1,7 +1,14 @@
 .mainDisplay{
     display: flex;
+    overflow: hidden;
 }
 .services{
     display: flex;
     flex-direction: column;
+}
+
+.bar{
+    background: #9C79E2;
+    padding: 10px 20px;
+    height: 100vh;
 }

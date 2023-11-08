@@ -1,3 +1,7 @@
+body{
+    margin: 0;
+}
+
 .centerFlex {
     display: flex;
     width: 600px;
@@ -24,4 +28,12 @@ input{
 }
 .centerFlex2 input{
     width: 180px;
+}
+
+button{
+    border-radius: 10px;
+    border: 1px solid #61429b;
+    color: #e1ddb2;
+    padding: 10px 15px;
+    background: #61429b;
 }
