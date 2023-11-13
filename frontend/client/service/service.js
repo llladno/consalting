@@ -1,3 +1,10 @@
+
+if (!sessionStorage.getItem('id')){
+    window.location.href = './..'
+}
+console.log(sessionStorage.getItem('id'))
+
+
 function serviceBtn(event, serviceName) {
 
     let data = {}

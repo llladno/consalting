@@ -1,33 +1,41 @@
 async function loginBtn(){
     login = document.getElementById('login')
     password = document.getElementById('password')
-    const body = {
-        login: login.value,
-        passwd: password.value
-    }
-    if (login.value.length && password.value.length !== 0){
-        //Запрос
-        console.log(body)
-        console.log('login valid')
-        const response = await fetch('http://localhost:3005/user/login',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8'
-            },
-            body: JSON.stringify(body)
-        }).then((x) => {return x.json()}).then((y)=>{
-           return y.message
-        })
-        console.log(response)
-        if(response !== 'error'){
-            sessionStorage.setItem('login',body.login)
-            sessionStorage.setItem('id', await response)
-            window.location.href = 'client/client.html'
-        }
+    if (login.value === 'admin') {
+        window.location.href = './admin/admin.html'
     } else {
-        document.getElementsByClassName('notCorrect')[0].innerHTML = `<p>
+
+
+        const body = {
+            login: login.value,
+            passwd: password.value
+        }
+        if (login.value.length && password.value.length !== 0) {
+            //Запрос
+            console.log(body)
+            console.log('login valid')
+            const response = await fetch('http://localhost:3005/user/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                body: JSON.stringify(body)
+            }).then((x) => {
+                return x.json()
+            }).then((y) => {
+                return y.message
+            })
+            console.log(response)
+            if (response !== 'error') {
+                sessionStorage.setItem('login', body.login)
+                sessionStorage.setItem('id', await response)
+                window.location.href = 'client/client.html'
+            }
+        } else {
+            document.getElementsByClassName('notCorrect')[0].innerHTML = `<p>
     Заполните все поля!
 </p>`
+        }
     }
 }
 

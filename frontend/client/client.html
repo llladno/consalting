@@ -5,6 +5,7 @@
     <title>Client panel</title>
     <script src="service/service.js"></script>
     <script src="service/order.js"></script>
+    <script src="service/ordercheck.js"></script>
     <link rel="stylesheet" href="client.css">
     <link rel="stylesheet" href="../styles.css">
 
@@ -21,11 +22,12 @@
         </div>
         <div class="orders">
             <h2>Заказы</h2>
-            <button onclick="getOrders()">Заказ</button>
-            <button>Отчетёты</button>
-            <button>Счета</button>
+            <div style="display: flex;justify-content: space-between">
+                <button style="width: 45%;" onclick="getOrders()">Заказ</button>
+                <button style="width: 45%;" onclick="getOrdersCheck()">Счета</button>
+            </div>
         </div>
-        <button onclick="window.location.href='..'">Выйти</button>
+        <button onclick="window.location.href='..'" style="width: 100%">Выйти</button>
     </div>
     <div class="mainPlace">
     </div>

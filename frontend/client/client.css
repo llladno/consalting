@@ -1,6 +1,14 @@
+html{
+    height: 100%;
+}
+
+body{
+    margin: 0;
+    height: 100vh;
+}
+
 .mainDisplay{
-    display: flex;
-    overflow: hidden;
+    display: flex
 }
 .services{
     display: flex;
@@ -8,7 +16,28 @@
 }
 
 .bar{
-    background: #9C79E2;
+    position: fixed;
+    height: 100%;
+    width: 20%;
+    border: 4px solid #afafaf;
+    background: rgba(206, 206, 206, 0.76);
     padding: 10px 20px;
-    height: 100vh;
+}
+
+button{
+    color: white;
+    margin-top: 20px;
+    background: black;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+}
+
+button:hover{
+    background: #3b3b3b;
+}
+
+.mainPlace{
+    position: relative;
+    left: 30%;
 }

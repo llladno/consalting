@@ -1,5 +1,9 @@
 body{
+    background: url("light-gray-abstract-background.jpg");
+    background-size: cover;
+    background-attachment: fixed;
     margin: 0;
+    height: 100vh;
 }
 
 .centerFlex {
@@ -13,8 +17,10 @@ body{
 }
 
 input{
+    width: 290px;
+    height: 20px;
     border: 1px solid #000;
-    border-radius: 10px;
+    border-radius: 2px;
 }
 
 .centerFlex2 {
@@ -30,10 +36,34 @@ input{
     width: 180px;
 }
 
-button{
-    border-radius: 10px;
-    border: 1px solid #61429b;
-    color: #e1ddb2;
-    padding: 10px 15px;
-    background: #61429b;
+
+.center {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center button{
+    color: white;
+    margin-top: 20px;
+    width: 120px;
+    background: black;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+}
+
+
+.registration {
+    color: white;
+    margin-top: 20px;
+    background: black;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+}
+
+.center button:hover{
+background: #3b3b3b;
 }

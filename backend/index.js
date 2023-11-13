@@ -3,7 +3,7 @@ const app = express()
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const mysql = require('mysql2')
-const {request} = require("express");
+const {request, response} = require("express");
 const {set} = require("express/lib/application");
 const {resetWatchers} = require("nodemon/lib/monitor/watch");
 //
@@ -165,6 +165,22 @@ app.post('/add/service', async (req, res)=>{
         //     }
         // })
     })
+
+
+    app.post('/client/getOrdersCheck',(req,res)=>{
+        console.log(req.body.id)
+        connection.query(`SELECT * FROM company.ordercheck WHERE idclient = ${+req.body.id}`,(err, request)=>{
+            console.log(request)
+            res.send({data: request})
+        })
+    })
+
+    app.post('/client/payOrdersCheck',(req,res)=>{
+        connection.query(`DELETE FROM company.mainorder WHERE orderwrite='${req.body.orderwrite} AND idclient = ${req.body.user}`)
+        console.log(req.body.id)
+    })
+
+
     app.post('/client/getServices',(req,res)=>{
         console.log(req.body.id)
         // connection.query(``)
@@ -187,18 +203,20 @@ app.post('/add/service', async (req, res)=>{
     })
 
     app.post('/client/setServices', async (req,res)=>{
-    //     Array.from(req.body.data).forEach((y)=>{
-    //         let getid
-    //         console.log(y)
-    //         connection.query(`SELECT * FROM employee`,(err, request)=>{
-    //             getid = request.filter((x)=> x.activity === y.name)
-    //             console.log(getid)
-    //             connection.query(`insert into service(idemployee, nameservice, costservice, descriptionservice)
-    // values(${getid[0].idemployee},'${y.name}',${y.price},'${y.description}')`,
-    //                 (err, resp) => {
-    //                 });
-    //         })
-    //     })
+        console.log(req.body)
+        Array.from(req.body.data).forEach((y)=>{
+            let getid
+            console.log(y)
+            connection.query(`SELECT * FROM employee`,(err, request)=>{
+                getid = request.filter((x)=> x.activity === y.name)
+                console.log(getid)
+                connection.query(`insert into service(idemployee, nameservice, costservice, descriptionservice)
+    values(${getid[0].idemployee},'${y.name}',${y.price},'${y.description}')`,
+                    (err, resp) => {
+                    });
+            })
+        })
+        let date = new Date()
         setTimeout( ()=>{
             let autoinc
             connection.query('select orderwrite from mainorder',(err, resp)=>{
@@ -217,7 +235,7 @@ app.post('/add/service', async (req, res)=>{
             },100)
             setTimeout(()=>{
                 autoinc = autoinc+1
-                let date = new Date()
+
                 let cost = 0
                 Array.from(id).forEach((x)=>{
                     cost = cost + x.costservice
@@ -230,20 +248,148 @@ ${x.costservice},
 "${date.toLocaleDateString()}",'${autoinc}')`,(err, resp)=>{
                         console.log(err)
                         console.log(resp)
-                        setTimeout(()=>{
-                            connection.query(`insert into company.ordercheck (idclient,idorder,dateordercheck,dateorderpay,sumordercost,statusordercheck)
-VALUES (${req.body.user}, ${resp.insertId},'${date.toLocaleDateString()}','Не оплачено',${cost},'0')`,(err,respon)=>{
-                                console.log(err)
-                            })
-                        },300)
+                    })
+                    connection.query(`INSERT INTO company.report (idservice,datereport,readyreport,readyservice,filepath) VALUES (${x.idserice},'${date.toLocaleDateString()}', 0, 0, '')`, (err,respon)=>{
+                        console.log(err)
+                        console.log(respon)
                     })
                 })
+                setTimeout(()=>{
+                    connection.query(`SELECT
+        MAX(idorder) AS idorder,
+        MAX(idclient) AS idclient,
+    GROUP_CONCAT(idservice SEPARATOR ',') AS idservice,
+        MAX(descriptionorder) AS descriptionorder,
+        SUM(costorder) AS costorder,
+        MAX(dateorder) AS dateorder,
+        orderwrite
+    FROM mainorder where idclient = ${req.body.user}
+    GROUP BY orderwrite
+    ORDER BY idorder;`,(err, request)=>{
+                        console.log(err)
+                        console.log("REQUREST")
+                        autoinc -= 1
+                        console.log(request[autoinc])
+                        let data = request[autoinc]
+                        console.log(data)
+                        console.log(autoinc)
+                connection.query(`INSERT INTO company.ordercheck (idclient,idorder,dateordercheck,dateorderpay,sumordercost,
+statusordercheck, orderwrite) VALUES (${req.body.user}, '${data.idservice}', '${date.toLocaleDateString()}', 'Не оплачено', ${+data.costorder}, 'Не готов', '${data.orderwrite}')`, (err, respo) =>{
+                    console.log(err)
+                })
+                    })
+                },400)
             },200)
         },200)
     })
 
 
 
+    app.post('/client/getReport', (req,res)=>{
+        connection.query(`SELECT * FROM report where `)
+    })
+
+
+
+    app.post('/admin/getTable', async (req,res)=>{
+        if (req.body.table === 'mainorder') {
+            connection.query(`SELECT
+        MAX(idorder) AS idorder,
+        MAX(idclient) AS idclient,
+    GROUP_CONCAT(idservice SEPARATOR ',') AS idservice,
+        MAX(descriptionorder) AS descriptionorder,
+        SUM(costorder) AS costorder,
+        MAX(dateorder) AS dateorder,
+        orderwrite
+    FROM mainorder 
+    GROUP BY orderwrite
+    ORDER BY idorder;`, (err, response)=>{
+                res.send({data: response})
+            })
+        } else {
+            connection.query(`SELECT * FROM ${req.body.table}`, (err, response)=>{
+                res.send({data: response})
+            })
+        }
+        console.log(req.body.table)
+
+    })
+
+
+
+
+    app.post('/admin/delete',(req,res)=>{
+        console.log(req.body)
+        let whereis
+        if(req.body.name === 'mainorder') whereis = 'orderwrite'
+        else if(req.body.name === 'client') whereis = 'idclient'
+        else if(req.body.name === 'employee') whereis = 'idemployee'
+        else if(req.body.name === 'service') whereis = 'idserice'
+        else if(req.body.name === 'report') whereis = 'idreport'
+        else if(req.body.name === 'ordercheck') whereis = 'orderwrite'
+
+        connection.query(`delete from ${req.body.name} where ${whereis} = ${req.body.id}`)
+    })
+
+    app.post('/change/employee', (req,res)=>{
+        connection.query(`UPDATE employee SET surname = '${req.body[1]}', fname = '${req.body[2]}', 
+thrname = '${req.body[3]}', mail = '${req.body[4]}', phone = '${req.body[5]}', activity = '${req.body[6]}', 
+passwd = '${req.body[7]}', WHERE idemployee = ${+req.body[0]}`,
+            (err, res) => {
+            });
+    })
+
+    app.post('/change/client', (req,res)=>{
+        connection.query(`UPDATE client SET surname = '${req.body[1]}', clientname = '${req.body[2]}', 
+companyname = '${req.body[4]}', addresscompany = '${req.body[5]}', email = '${req.body[6]}', phone = '${req.body[7]}', 
+passwd = '${req.body[8]}', parent = '${req.body[3]}' WHERE idclient = ${+req.body[0]}`,
+            (err, res) => {
+                console.log(err)
+            });
+    })
+
+    app.post('/change/mainorder', (req,res)=>{
+        connection.query(`UPDATE mainorder SET idclient = '${req.body[1]}', idservice = '${req.body[2]}', 
+descriptionorder = '${req.body[3]}', costorder = '${req.body[4]}', dateorder = '${req.body[5]}' WHERE orderwrite = ${+req.body[0]}`,
+            (err, res) => {
+                console.log(err)
+            });
+    })
+
+    app.post('/change/service', (req,res)=>{
+        connection.query(`UPDATE service SET idemployee = '${req.body[1]}', nameservice = '${req.body[2]}', 
+costservice = '${req.body[3]}', 
+descriptionservice = '${req.body[4]}'
+WHERE idserice = '${+req.body[0]}'`,
+            (err, res) => {
+                console.log(err)
+            });
+    })
+
+    app.post('/change/ordercheck', (req,res)=>{
+        console.log(req.body)
+        connection.query(`UPDATE ordercheck SET idclient = '${req.body[1]}', idorder = '${req.body[2]}', 
+dateordercheck = '${req.body[3]}', 
+dateorderpay = '${req.body[4]}',
+sumordercost = '${req.body[5]}',
+statusordercheck = '${req.body[6]}'
+WHERE orderwrite = '${+req.body[0]}'`,
+            (err, res) => {
+                console.log(err)
+            });
+    })
+
+    app.post('/change/report', (req,res)=>{
+        console.log(req.body)
+        connection.query(`UPDATE report SET idservice = '${req.body[1]}', datereport = '${req.body[2]}', 
+readyreport = '${req.body[3]}', 
+readyservice = '${req.body[4]}',
+filepath = '${req.body[5]}'
+WHERE idreport = '${+req.body[0]}'`,
+            (err, res) => {
+                console.log(err)
+            });
+    })
 
     app.get('/admin/client',(req,res)=>{
         connection.query(`SELECT * FROM client`,(err, request)=>{
@@ -313,28 +459,10 @@ VALUES (${req.body.user}, ${resp.insertId},'${date.toLocaleDateString()}','Не 
     })
 
 
-    app.post('/admin/delete',(req,res)=>{
-        console.log(req.body)
-        let whereis
-        if(req.body.table === 'client') whereis = 'idclient'
-        else if(req.body.table === 'employee') whereis = 'idemployee'
-        else if(req.body.table === 'ticket') whereis = 'idticket'
-        else if(req.body.table === 'cheque') whereis = 'idcheque'
-
-        connection.query(`delete from ${req.body.table} where ${whereis} = ${req.body.id}`)
-    })
 
 
 
-    app.post('/admin/change/client',(req,res)=>{
-        console.log(req.body)
-        console.log(req.body[0])
-        console.log(req.body)
-        connection.query(`UPDATE client SET name = '${req.body[1]}', pol = '${req.body[2]}', datebirthday='${req.body[3]}',
-email = '${req.body[4]}',phone = '${req.body[5]}', passwd = '${req.body[6]}' WHERE idclient = ${+req.body[0]}`,
-            (err, res) => {
-            });
-    })
+
 
     app.post('/admin/change/employ',(req,res)=>{
         console.log(req.body)
@@ -346,96 +474,11 @@ email = '${req.body[4]}',phone = '${req.body[5]}', passwd = '${req.body[6]}' WHE
 
 
 
-    app.post('/admin/change/ticket',(req,res)=>{
-        console.log(req.body)
-        console.log(req.body[0])
-        console.log(req.body)
-        connection.query(`UPDATE ticket SET category = '${req.body[1]}', cost = ${+req.body[2]}, time = '${req.body[3]}', person = ${+req.body[4]}, dateticket = '${req.body[5]}'  WHERE idticket = ${+req.body[0]}`,
-            (err, res) => {
-            });
-    })
-    app.post('/admin/change/cheque',(req,res)=>{
-        console.log(req.body)
-        console.log(req.body[0])
-        console.log(req.body)
-        connection.query(`UPDATE cheque SET idemployee = ${+req.body[1]}, idclient = ${+req.body[2]}, idticket = ${+req.body[3]}, dateandtime = '${req.body[4]}'  WHERE idcheque = ${+req.body[0]}`,
-            (err, res) => {
-            });
-    })
 
-    app.post('/user/home',(req,res)=>{
-        console.log(req.body)
-        let id
-        connection.query(`select * from client where email = ${req.body.mail}`, (err, resu) => {
-            console.log(resu)
-            res.send({resu})
-        })
-    })
 
-    app.post('/user/home/cheque',(req,res)=>{
-        console.log(req.body)
-        let id
-        connection.query(`select * from client where email = ${req.body.mail}`, (err, resu) => {
-            console.log(resu)
-            if(resu[0].idclient != undefined){
-                id = resu[0].idclient
-                console.log(id)
-                console.log('tit')
-                connection.query(`SELECT *
-FROM cheque
-inner JOIN ticket
-ON cheque.idticket = ticket.idticket where idclient = '${id}'`, (err, result) => {
-                    console.log(result)
-                    res.send({result})
-                })
-            }
-        })
 
-    })
 
-    app.post('/user/buyticket',(req, res)=>{
-        console.log(req.body)
-        let dateBuy = new Date()
-        connection.query(`SELECT *
-FROM ticket
-ORDER BY idticket DESC
-LIMIT 1`, (error,resul)=>{
-            console.log(error)
-            let freeID = resul[0].idticket
-            connection.query(`insert into cheque(idemployee, idclient, idticket,dateandtime)
-    values(2,${+req.body.idclient},
-    ${+freeID},'${dateBuy.toLocaleString()}')`)
-        })
-        connection.query(`insert into ticket(category, cost, time, person,dateticket)
-    values('${req.body.category}',${+req.body.cost},
-    '${req.body.timee}',
-    ${+req.body.person},'${req.body.dateticket}')`)
 
-//     connection.query(`insert into ticket(category, cost, time, person,dateticket)
-//     values('${req.body.category}',${+req.body.cost},
-//     '${req.body.time}',
-//     ${+req.body.person},'${req.body.dateticket}')`, (err, result)=>{
-//         console.log(err)
-//             connection.query(`SELECT *
-// FROM ticket
-// ORDER BY idticket DESC
-// LIMIT 1`, (error,resul)=>{
-//             console.log(err)
-//             console.log(resul[0].idticket)
-//                 connection.query(`insert into cheque(idemployee, idclient, time, idticket,dateandtime)
-//     values(1,${+req.body.cost},
-//     '${req.body.time}',
-//     ${+req.body.person},'${req.body.dateticket}')`)
-//         })
-//     })
-
-    })
-    app.post('/getstat',(req,res)=>{
-        connection.query(`select * from ticket`, (err, resu) => {
-            console.log(resu)
-            res.send({resu})
-        })
-    })
 
 
 

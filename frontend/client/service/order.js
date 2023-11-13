@@ -64,6 +64,7 @@ async function toOrder (){
     for (let b in services){
         if (sessionStorage.getItem(services[b]) !== null){
             basket.push(sessionStorage.getItem(services[b]))
+            sessionStorage.removeItem(services[b])
         }
     }
 
@@ -106,4 +107,7 @@ async function toOrder (){
         },
         body: JSON.stringify({data:dataTosend, user: sessionStorage.getItem('id')})
     })
+
+
+    window.location.reload()
 }
